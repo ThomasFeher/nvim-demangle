@@ -2,6 +2,7 @@ local M ={}
 local scheduler = require'plenary.async.util'.scheduler
 local void = require'plenary.async.async'.void
 local ns_id = vim.api.nvim_create_namespace('demangle')
+local enabled = true
 
 function demangle_line(buf, line, i_line)
 	local col_start, col_end = string.find(line, "_Z[%w%d_]*")
@@ -76,12 +77,35 @@ local get_line_width = function()
 end
 
 M.run = function(buf)
+	if not enabled then
+		return
+	end
 	if buf == 0 then
 		buf = vim.api.nvim_get_current_buf()
 	end
 	local line_width = get_line_width(buf)
 	local n_line = vim.api.nvim_buf_line_count(buf)
 	void(function() demangle_buf(buf, n_line, line_width) end)()
+end
+
+M.toggle = function()
+	enabled = not enabled
+	local buf_list = vim.api.nvim_list_bufs()
+	if enabled then
+		for _, buf in pairs(buf_list) do
+			if vim.api.nvim_buf_is_loaded(buf) then
+				if vim.api.nvim_buf_get_option(buf, 'filetype') == 'asm' then
+					M.run(buf)
+				end
+			end
+		end
+	else
+		for _, buf in pairs(buf_list) do
+			if vim.api.nvim_buf_is_loaded(buf) then
+				vim.api.nvim_buf_clear_namespace(buf, ns_id, 0, -1)
+			end
+		end
+	end
 end
 
 return M
