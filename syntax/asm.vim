@@ -1,1 +1,1 @@
-lua require'demangle'.run()
+lua require'demangle'.run(0)

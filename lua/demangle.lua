@@ -75,8 +75,10 @@ local get_line_width = function()
 	return win_width - number_width - sign_width
 end
 
-M.run = function()
-	local buf = vim.api.nvim_get_current_buf()
+M.run = function(buf)
+	if buf == 0 then
+		buf = vim.api.nvim_get_current_buf()
+	end
 	local line_width = get_line_width(buf)
 	local n_line = vim.api.nvim_buf_line_count(buf)
 	void(function() demangle_buf(buf, n_line, line_width) end)()
