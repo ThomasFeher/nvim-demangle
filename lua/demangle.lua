@@ -62,17 +62,22 @@ local demangle_buf = function(buf, n_line, line_width)
 	end
 end
 
-M.run = function()
-	local buf = vim.api.nvim_get_current_buf()
+local get_line_width = function()
+	-- just using the current window
+	-- how could we handle different configurations for multiple windows?
 	local win = vim.api.nvim_get_current_win()
-	-- colculate usable line width
 	local sign_width = string.find(vim.api.nvim_win_get_option(win, "signcolumn"), "%d+")
 	if not sign_width then
 		sign_width = 0
 	end
 	local win_width = vim.api.nvim_win_get_width(win)
 	local number_width = vim.api.nvim_win_get_option(win, "numberwidth")
-	local line_width = win_width - number_width - sign_width
+	return win_width - number_width - sign_width
+end
+
+M.run = function()
+	local buf = vim.api.nvim_get_current_buf()
+	local line_width = get_line_width(buf)
 	local n_line = vim.api.nvim_buf_line_count(buf)
 	void(function() demangle_buf(buf, n_line, line_width) end)()
 end
